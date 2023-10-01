@@ -1,4 +1,4 @@
-import { Heading, Button, Badge, useToast } from '@chakra-ui/react'
+import { Heading, Button, Badge, useToast, Text, Box } from '@chakra-ui/react'
 import { Head } from '../../components/layout/Head'
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
@@ -26,6 +26,8 @@ export default function Proposal() {
   const [values, setValues] = useState<any>()
   const [calldatas, setCalldatas] = useState<any>()
   const [rawDescription, setRawDescription] = useState<any>()
+  const [forVotes, setForVotes] = useState<number>(null)
+  const [againstVotes, setAgainstVotes] = useState<number>(null)
 
   const provider = useProvider()
   const { data: signer } = useSigner()
@@ -38,11 +40,20 @@ export default function Proposal() {
     const state = await gov.state(proposalId)
     console.log('state:', state)
     setStateBadge(
-      <Badge ml="1" fontSize="0.5em" colorScheme={stateColor[state]} variant="solid">
+      <Badge fontSize="0.5em" colorScheme={stateColor[state]} variant="solid">
         {stateText[state]}
       </Badge>
     )
     setState(stateText[state])
+  }
+
+  const getCurrentVotes = async (proposalId) => {
+    const gov = new ethers.Contract(GOV_CONTRACT_ADDRESS, GOV_CONTRACT_ABI, provider)
+    const votes = await gov.proposalVotes(proposalId)
+    console.log('votes for', Number(votes.forVotes))
+    console.log('votes against', Number(votes.againstVotes))
+    setForVotes(Number(votes.forVotes))
+    setAgainstVotes(Number(votes.againstVotes))
   }
 
   const getProposalData = async () => {
@@ -74,6 +85,7 @@ export default function Proposal() {
             }
             console.log(proposals[i].args[8].substring(proposals[i].args[8].indexOf('(') + 1, proposals[i].args[8].indexOf(')')))
             await getState(proposalId)
+            await getCurrentVotes(proposalId)
 
             console.log('proposals:', proposals)
             // desc in execute: https://forum.openzeppelin.com/t/governor-hardhat-testing/15290/7
@@ -135,6 +147,20 @@ export default function Proposal() {
   const voteYes = async () => {
     // https://docs.openzeppelin.com/contracts/4.x/api/governance#IGovernor-COUNTING_MODE--
     // 0 = Against, 1 = For, 2 = Abstain
+
+    if (signer === undefined) {
+      toast({
+        title: 'Disconnected',
+        position: 'bottom',
+        description: 'Please connect your wallet first.',
+        status: 'info',
+        variant: 'subtle',
+        duration: 2000,
+        isClosable: true,
+      })
+      return
+    }
+
     try {
       const delegate = await delegateToMyself()
       console.log('delegateToMyself():', delegate)
@@ -172,6 +198,20 @@ export default function Proposal() {
 
   const voteNo = async () => {
     console.log('voting...')
+
+    if (signer === undefined) {
+      toast({
+        title: 'Disconnected',
+        position: 'bottom',
+        description: 'Please connect your wallet first.',
+        status: 'info',
+        variant: 'subtle',
+        duration: 2000,
+        isClosable: true,
+      })
+      return
+    }
+
     try {
       const delegate = await delegateToMyself()
       console.log('delegateToMyself():', delegate)
@@ -224,6 +264,7 @@ export default function Proposal() {
       const gov = new ethers.Contract(GOV_CONTRACT_ADDRESS, GOV_CONTRACT_ABI, signer)
       const executeCall = await gov.execute(targetsFormatted, valuesFormatted, calldatasFormatted, hashedDescription)
       await executeCall.wait(1)
+      getState(proposalId)
       setLoading(false)
     } catch (e) {
       console.log('error:', e)
@@ -246,16 +287,17 @@ export default function Proposal() {
       <Head title={title} />
       <main>
         <Heading as="h2">{title}</Heading>
-        <p>
-          {stateBadge} |{' '}
-          <a
+        <Text>
+          {stateBadge} For: <strong>{forVotes}</strong> | Against: <strong>{againstVotes}</strong>
+        </Text>
+
+        {/* <a
             href={'https://explorer-test.arthera.net/address/' + GOV_CONTRACT_ADDRESS}
             target="_blank"
             rel="noopener noreferrer"
             style={{ color: '#45a2f8' }}>
             <strong> View on the explorer</strong>
-          </a>
-        </p>
+          </a> */}
 
         <div>
           <br />
@@ -265,7 +307,10 @@ export default function Proposal() {
 
         {uri !== null && (
           <>
-            <Image priority width="400" height="400" alt={'attached-image'} src={uri} />
+            {' '}
+            <Box maxW="sm" borderRadius="lg" overflow="hidden">
+              <Image priority width="400" height="400" alt={'attached-image'} src={uri} />
+            </Box>
             <br />
           </>
         )}
