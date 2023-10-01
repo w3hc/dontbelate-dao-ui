@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Flex, useColorModeValue, Spacer, Heading, Menu, MenuButton, MenuList, MenuItem, Button } from '@chakra-ui/react'
 import { ChevronDownIcon } from '@chakra-ui/icons'
 import { SITE_NAME, APP_VERSION } from '../../utils/config'
@@ -12,6 +12,12 @@ interface Props {
 
 export function Header(props: Props) {
   const className = props.className ?? ''
+
+  const [selectedPage, setSelectedPage] = useState('Explore')
+
+  const switchToJoin = async () => {
+    setSelectedPage('Join')
+  }
 
   return (
     <Flex as="header" className={className} bg={useColorModeValue('gray.100', 'gray.900')} px={4} py={5} mb={8} alignItems="center">
@@ -37,11 +43,11 @@ export function Header(props: Props) {
             _hover={{ bg: 'purple.700' }}
             _expanded={{ bg: 'blue.400' }}
             _focus={{ boxShadow: 'outline' }}>
-            Explore
+            {selectedPage}
           </MenuButton>
           <MenuList>
             <LinkComponent href="/join">
-              <MenuItem>Join</MenuItem>
+              <MenuItem onClick={switchToJoin}>Join</MenuItem>
             </LinkComponent>
 
             <LinkComponent href="/push">
