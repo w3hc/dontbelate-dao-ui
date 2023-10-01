@@ -4,7 +4,7 @@ import { Head } from '../../components/layout/Head'
 import { useState } from 'react'
 import { useSigner, useProvider } from 'wagmi'
 import { ethers } from 'ethers'
-import { GOV_CONTRACT_ADDRESS, GOV_CONTRACT_ABI, TALLY_DAO_NAME } from '../../utils/config'
+import { GOV_CONTRACT_ADDRESS, GOV_CONTRACT_ABI, TALLY_DAO_NAME, nftAbi } from '../../utils/config'
 import { UploadFile } from '../../components/layout/UploadFile'
 import { UploadData } from '../../components/layout/UploadData'
 import { useRouter } from 'next/router'
@@ -137,6 +137,9 @@ export default function Create() {
 
       console.log('encryptionRequested:', encryptionRequested)
 
+      // delegate to self before calling propose
+      await delegateToMyself()
+
       // call propose
       console.log('caller address:', await signer.getAddress())
       const propose = await gov.propose(targets, values, calldatas, PROPOSAL_DESCRIPTION)
@@ -172,6 +175,34 @@ export default function Create() {
       const file = event
       setName(file.name)
       setPlaintext(file)
+    }
+  }
+
+  const hasDelegated = async () => {
+    const gov = new ethers.Contract(GOV_CONTRACT_ADDRESS, GOV_CONTRACT_ABI, signer)
+    const delegateTo = await signer.getAddress()
+    const nftAddress = await gov.token()
+    const nft = new ethers.Contract(nftAddress, nftAbi, signer)
+    const delegate = await nft.delegates(await signer.getAddress())
+    if (delegate === delegateTo) {
+      return true
+    }
+  }
+
+  const delegateToMyself = async () => {
+    if ((await hasDelegated()) === true) {
+      return true
+    } else {
+      console.log('delegating to self...')
+      const delegateTo = await signer.getAddress()
+      console.log('hello signer address:', await signer.getAddress())
+      const gov = new ethers.Contract(GOV_CONTRACT_ADDRESS, GOV_CONTRACT_ABI, signer)
+      const nftAddress = await gov.token()
+      const nft = new ethers.Contract(nftAddress, nftAbi, signer)
+      const delegate = await nft.delegate(delegateTo)
+      const receippt = await delegate.wait(1)
+      console.log('delegate receippt:', receippt)
+      return true
     }
   }
 
