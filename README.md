@@ -1,17 +1,20 @@
 # Gov UI
 
-An interface for the #DontBeLate DAO.
+An interface for your DAO.
 
-Live at **[https://dontbelate.netlify.app/](https://dontbelate.netlify.app/)**
+The goal is to provide an interface that's easy to deploy. Ideally 1 click for Gov Solidity contracts, 1 click for this interface.
+
+Live at **[https://gov-ui.netlify.app/](https://gov-ui.netlify.app/)**
 
 See also:
 
-- [Solidity contracts](https://github.com/w3hc/dontbelate-dao-contracts)
+- [Solidity contracts](https://github.com/w3hc/gov)
+- [Documentation](https://w3hc.github.io/gov-docs/)
 
 ## Install
 
 ```sh
-pnpm install
+npm i
 ```
 
 ## Run
@@ -25,8 +28,12 @@ cp .env.example .env
 Add your own keys in your `.env` file, then:
 
 ```sh
-pnpm dev
+npm run dev
 ```
+
+## Contribute
+
+See the [Gov contracts, UI, and docs](https://github.com/orgs/w3hc/projects/8/views/6) project to learn about the current development. Some issues are marked `good first issue`: they can be a good start if you want to contribute to the project.
 
 ## Versions
 
