@@ -44,6 +44,18 @@ export default function Join() {
 
   const mint = async () => {
     try {
+      if (signer === undefined) {
+        toast({
+          title: 'Disconnected',
+          position: 'bottom',
+          description: 'Please connect your wallet first.',
+          status: 'info',
+          variant: 'subtle',
+          duration: 2000,
+          isClosable: true,
+        })
+        return
+      }
       setLoading(true)
       const userAddress = await signer.getAddress()
       const gov = new ethers.Contract(GOV_CONTRACT_ADDRESS, GOV_CONTRACT_ABI, signer)
@@ -77,7 +89,9 @@ export default function Join() {
 
   useEffect(() => {
     const init = async () => {
-      scanWallet()
+      if (signer !== undefined) {
+        scanWallet()
+      }
       setInitialized(true)
     }
     init()
