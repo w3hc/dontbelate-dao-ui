@@ -42,6 +42,7 @@ export function Header(props: Props) {
           <MenuButton
             ml={3}
             as={Button}
+            size={16}
             rightIcon={<ChevronDownIcon />}
             px={4}
             py={2}
@@ -57,13 +58,11 @@ export function Header(props: Props) {
             <LinkComponent href="/join">
               <MenuItem onClick={switchToJoin}>Join</MenuItem>
             </LinkComponent>
-
-            <LinkComponent href="/push">
-              <MenuItem onClick={switchToPropose}>Propose</MenuItem>
-            </LinkComponent>
-
             <LinkComponent href="/delegate">
               <MenuItem onClick={switchToDelegate}>Delegate</MenuItem>
+            </LinkComponent>
+            <LinkComponent href="/push">
+              <MenuItem onClick={switchToPropose}>Submit a proposal</MenuItem>
             </LinkComponent>
           </MenuList>
         </Menu>
